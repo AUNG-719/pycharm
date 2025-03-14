@@ -1,4 +1,18 @@
+apple_extraction.py
+from rembg import remove
 
+# 读取原始图片
+input_path = "cropped_apple.png"  # 替换为你的图片路径
+output_path = "cropped_apple_no_bg.png"   # 处理后保存路径
+
+# 打开图片并去除背景
+with open(input_path, "rb") as inp_file:
+    input_image = inp_file.read()
+    output_image = remove(input_image)  # 使用 rembg 进行背景去除
+
+# 保存去背景后的图片
+with open(output_path, "wb") as out_file:
+    out_file.write(output_image) # 写入图片
 import cv2
 
 # 读取图像
