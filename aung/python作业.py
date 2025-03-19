@@ -1,48 +1,85 @@
-fahrenheit = float(input("输入一个华氏温度："))
-celsiust = 5/9*(fahrenheit-32)
-print("摄氏温度值为：",celsiust)
+import time
+import math
+import turtle
 
-print("今天是星期4，求第n天之后是星期几？")
-n = int(input("输入n的值:"))
-weekday = (4*n)%7
-print(n,"天之后，星期",weekday)
+# 获取当前时间
+current_time = time.localtime()
+hour = current_time.tm_hour  # 显示用小时
+hour_for_angle = current_time.tm_hour + current_time.tm_min / 60  # 计算用时间
 
-import math #三角函数
-import time #时间
+# 计算太阳高度角（正午90°，每小时变化15°）
+sun_elevation = 90 - 15 * (hour_for_angle - 12)
 
-def main():
- g = 9.8
-v0 = float(input("请输入火球的初速度（m/s）："))
-theta = float(input("请输入施法角度（度）:"))
-D = float(input("请输入目标水平距离："))
+# 晷针高度
+gnomon_height = 100
 
-print(" 正在施法火球术，咒语聆听中...")
+# 计算影子长度
+if math.tan(math.radians(sun_elevation)) != 0:
+    shadow_length = gnomon_height / math.tan(math.radians(sun_elevation))
+else:
+    shadow_length = 0  # 防止除以零
 
-start_time = time.time()
-施法时间 = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))
-vx = v0 * math.cos(theta)
-vy = v0 * math.sin(theta)
-t_flight = D / vx
-h_max = vy ** 2 / (2 * 9.8)
-E = 50 * t_flight
-end_time = time.time()
-actual_time = end_time - start_time
+# 初始化画布
+screen = turtle.Screen()
+screen.title("简易日晷")
+screen.bgcolor("white")
 
-print("===== 火球术弹道报告 =====")
-print(f"施法时间：{施法时间}")
-print(f"水平初速度：{vx:.2f}m/s")
-print(f"垂直初速度：{vy:.2f}m/s")
-print(f"飞行时间：{t_flight:.2f}秒")
-print(f"最大高度：{h_max:.2f}米")
-print(f"魔法能量消耗：{E:.2f}单位")
-print(f"施法实际时间：{actual_time:.2f}秒")
+# 绘制日晷盘
+dial = turtle.Turtle()
+dial.speed(0)
+dial.penup()
+dial.goto(0, -150)
+dial.pendown()
+dial.circle(150)
 
-print("戒！")
-print("===== 火球术弹道报告 =====")
-print(f"施法时间：{施法时间}")
-print(f"水平初速度：{vx:.2f}m/s")
-print(f"垂直初速度：{vy:.2f}m/s")
-print(f"飞行时间：{t_flight:.2f}秒")
-print(f"最大高度：{h_max:.2f}米")
-print(f"魔法能量消耗：{E:.2f}单位")
-print(f"施法实际时间：{actual_time:.2f}秒")
+# 绘制刻度（12小时制）
+dial.penup()
+dial.goto(0, 0)
+dial.setheading(90)  # 正北为0刻度
+for i in range(12):
+    dial.forward(140)
+    dial.pendown()
+    dial.forward(10)  # 刻度线长度
+    dial.penup()
+    dial.goto(0, 0)
+    dial.right(30)  # 每小时30°
+
+# 绘制晷针（红色竖线）
+gnomon = turtle.Turtle()
+gnomon.color("red")
+gnomon.pensize(4)
+gnomon.penup()
+gnomon.goto(0, 0)
+gnomon.pendown()
+gnomon.setheading(90)  # 正北方向
+gnomon.forward(gnomon_height)
+
+# 绘制影子
+shadow = turtle.Turtle()
+shadow.color("gray")
+shadow.pensize(4)
+shadow.penup()
+shadow.goto(0, 0)
+shadow.pendown()
+
+if abs(shadow_length) > 1:  # 增加影子长度最小显示值
+    # 调整影子角度（适配turtle坐标系）
+    shadow_angle = 90 - 15 * (hour_for_angle - 12)
+    if sun_elevation < 0:  # 太阳低于地平线时调整方向
+        shadow_angle += 180
+    shadow.setheading(shadow_angle)
+    shadow.forward(abs(shadow_length))
+else:
+    shadow.write("太阳接近直射或角度异常", align="center", font=("Arial", 12, "normal"))
+
+# 显示当前时间和影长
+info = turtle.Turtle()
+info.hideturtle()
+info.penup()
+info.goto(-120, -180)
+info.write(
+    f"当前时间: {hour}:{current_time.tm_min:02d}\n影子长度: {abs(shadow_length):.1f}像素",
+    font=("Arial", 14, "normal")
+)
+
+screen.mainloop()
